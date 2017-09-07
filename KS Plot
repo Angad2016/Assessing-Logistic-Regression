@@ -1,0 +1,39 @@
+KS PLOT TECHNIQUE AT END (REST CODE FOR SHOWING PREREQUISITE)
+
+
+df.client <- read.csv('bank_client.csv')
+str(df.client)
+
+
+df.attr <- read.csv('bank_other_attributes.csv')
+str(df.attr)
+
+
+df.campaign <- read.csv('latest_campaign.csv')
+str(df.campaign)
+
+
+df.campOutcome <- read.csv('campaign_outcome.csv')
+str(df.campOutcome)
+
+
+df.temp1 <- merge(df.client, df.campaign, by = 'Cust_id', all.x = TRUE)
+df.temp2 <- merge(df.temp1, df.attr, by = 'Cust_id', all.x = TRUE)
+df.data <- merge(df.temp2, df.campOutcome, by = 'Cust_id', all.x = TRUE)
+length(unique(df.data$Cust_id)) == nrow(df.data) #checking for any duplicate customer ID
+
+
+set.seed(1234) # for reproducibility
+df.data$rand <- runif(nrow(df.data))
+df.train <- df.data[df.data$rand <= 0.7,]
+df.test <- df.data[df.data$rand > 0.7,]
+nrow(df.train)
+nrow(df.test)
+
+df.train$yact = ifelse(df.train$y == 'yes',1,0)
+full.model <- glm(formula = yact ~ age + balance + duration + campaign + pdays + previous +
+                    job + marital + education + default + housing + loan + poutcome, 
+                  data=df.train, family = binomial)
+summary(full.model)
+
+ks_plot(actuals=df.train$y, predictedScores=df.train$ypred)
